@@ -29,7 +29,8 @@ except:
 initial_count = len(yomi_json)
 print("Initial number of entries in the dictionary: "+str(initial_count)+'\n')
 
-counter_dl=nb_downloaded*(date_check==date_today)
+counter_today=nb_downloaded*(date_check==date_today)
+last_count = initial_count
 for items in news_list[0]:
     year = int(items[0:4])
     month = int(items[5:7])
@@ -52,18 +53,20 @@ for items in news_list[0]:
                 dic_json = scripts.add_readings(dic_json)
                 print("added readings")
                 yomi_json = scripts.to_yomichan(dic_json,yomi_json)
-                print("updated dictionnary\n")
+                print("updated dictionnary")
+                counter_dl = len(yomi_json)-last_count
+                last_count = len(yomi_json)
+                print(str(counter_dl)+" words added\n")
                 if article_date==date.today():
-                    counter_dl=counter_dl+1
+                    counter_today=counter_today+1
         
-new_count=len(yomi_json)
-added = new_count-initial_count
+added = last_count-initial_count
 print(str(added)+" words added in this session")
 output_json = json.dumps(yomi_json, ensure_ascii=False)
 yomi_file = open("yomichan/term_bank_1.json", 'w', encoding='utf8')
 yomi_file.write(output_json)
 yomi_file.close()
-last_check = [date_today, counter_dl]
+last_check = [date_today, counter_today]
 filehandler = open('last_check.p','wb')
 pickle.dump(last_check,filehandler)
 filehandler.close()
