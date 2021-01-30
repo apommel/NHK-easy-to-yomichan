@@ -1,5 +1,5 @@
 __pycache__/
 last_check.p
 struct.json
-term_bank*
-nhk_easy.zip
+term_bank_*
+*.zip

@@ -1,5 +1,5 @@
 import json
-from pykakasi import kakasi as kaka
+import pykakasi
 import re
 
 def clean_ruby2(dic_str):
@@ -10,29 +10,24 @@ def clean_ruby2(dic_str):
 
 def add_readings(dic_json):
     for x in dic_json["reikai"]["entries"]:
+        kks = pykakasi.kakasi()
         for i in range(len(dic_json["reikai"]["entries"][x])):
-            kakasi = kaka()
-            hyouki=str()
+            hyouki = str()
             for char in dic_json["reikai"]["entries"][x][i]["hyouki"]:
                 if char!='[' and char!=']' and char!='"':
-                    hyouki=hyouki+char
-            kakasi.setMode('J', 'H')  # J(Kanji) to H(Hiragana)
-            kakasi.setMode("H", None) # Hiragana default: no conversion
-            conv = kakasi.getConverter()
-            hiragana = conv.do(hyouki)
-            kakasi.setMode('H', 'a')
-            conv = kakasi.getConverter()
-            romaji = conv.do(hiragana)
-            if hiragana==romaji: # katakana
-                kakasi.setMode('K', 'H')
-                conv = kakasi.getConverter()
-                hiragana = ""
-                kakasi.setMode('K', 'a')
-                conv = kakasi.getConverter()
-                romaji = conv.do(hyouki)
-            dic_json["reikai"]["entries"][x][i]["hyouki"]=hyouki
-            dic_json["reikai"]["entries"][x][i]["hiragana"]=hiragana
-            dic_json["reikai"]["entries"][x][i]["romaji"]=romaji
+                    hyouki = hyouki + char
+            result = kks.convert(hyouki)
+            katakana, hiragana, romaji = '', '', ''
+            for item in result:
+                katakana += item['kana']
+                hiragana += item['hira']
+                romaji += item['hepburn']
+            if hyouki == katakana or hyouki == hiragana:
+                kana = ''
+            else: kana = hiragana
+            dic_json["reikai"]["entries"][x][i]["hyouki"] = hyouki
+            dic_json["reikai"]["entries"][x][i]["hiragana"] = kana
+            dic_json["reikai"]["entries"][x][i]["romaji"] = romaji
     return dic_json
 
 def to_yomichan(dic_json,yomi_json):
@@ -54,8 +49,16 @@ def to_yomichan(dic_json,yomi_json):
             yomi_json[-1].append(kana)
             yomi_json[-1].append("")
             yomi_json[-1].append("")
-            yomi_json[-1].append("")
+            yomi_json[-1].append(0)
             yomi_json[-1].append(defi)
             yomi_json[-1].append("")
             yomi_json[-1].append("")
     return yomi_json
+
+def gojuon_entry(entry):
+    kks = pykakasi.kakasi()
+    result = kks.convert(entry[0])
+    hiragana = ''
+    for item in result:
+        hiragana += item['hira']
+    return hiragana

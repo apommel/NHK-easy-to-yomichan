@@ -62,6 +62,10 @@ for items in news_list[0]:
         
 added = last_count-initial_count
 print(str(added)+" words added in this session")
+yomi_json = sorted(yomi_json, key=scripts.gojuon_entry)
+for i in range(len(yomi_json)):
+    yomi_json[i][4] = 0
+    yomi_json[i][-2] = i
 output_json = json.dumps(yomi_json, ensure_ascii=False)
 yomi_file = open("yomichan/term_bank_1.json", 'w', encoding='utf8')
 yomi_file.write(output_json)
